@@ -21,7 +21,7 @@ print(df_titanic['fare'].value_counts())
 print(df_titanic['class'].value_counts())
 print(df_titanic['who'].value_counts())
 
-
+"""
 ##########Visualization##########
 #Distribution
 
@@ -51,4 +51,97 @@ fig, axes = plt.subplots(ncols=2)  #ncols: column의 개수  , 그래프 한번�
 df_titanic["survived"].value_counts().plot(kind="bar", ax = axes[0])  #ax: 그래프 순서
 df_titanic["survived"].value_counts().plot(kind="pie", autopct='%1.1f%%', ax=axes[1]) #살아있는 사람들의
 
+
+#############
+#Box plot
+fig, axes = plt.subplots(ncols=2)
+
+#Box plot: Age distribution of sirvivors and dead
+sns.boxplot(x='survived', y='age', data=df_titanic, ax=axes[0])
+
+#Box plot: Age distribution of survivors and dead
+sns.boxplot(x='who', y='age', data=df_titanic, ax=axes[1])
+
+#catplot 이용해서 boxplot 그리기
+sns.catplot(x='survived', y='age', kind='box', data=df_titanic)
+sns.catplot(x='who', y='age', kind='box', data=df_titanic)
+
+
+#Box plot: Fare distribution according to room class
+sns.boxplot(x='class', y='fare', data=df_titanic) 
+"""
+#Outlier Removal
+fare_q3 = df_titanic['fare'].quantile(q=0.75)
+fare_q1 = df_titanic['fare'].quantile(q=0.25)
+
+fare_iqr = fare_q3 - fare_q1
+
+
+condition = df_titanic['fare'] <= 4*fare_iqr
+new_df_titanic = df_titanic[condition]
+
+sns.catplot(x='class', y='fare', kind='box', data=new_df_titanic)
+
+
+#######
+#violin plot
+sns.catplot(x='survived', y='fare', kind='violin', data= df_titanic)
+
+#Outlier Removal
+fare_q3 = df_titanic['fare'].quantile(q=0.75)
+fare_q1 = df_titanic['fare'].quantile(q=0.25)
+
+fare_iqr = fare_q3 - fare_q1
+
+condition = df_titanic['fare'] <= 4*fare_iqr    #condition에는 조건에 맞는 True or False가 들어감
+new_df_titanic = df_titanic[condition]          #True면 행을 살리고 False면 행 제거
+
+sns.catplot(x='survived', y='fare', kind='violin', data=new_df_titanic)
+
+
+
+
+
+###########
+#scatter plot
+sns.scatterplot(x='age', y='fare', hue= 'sex', data=df_titanic)
+#Outlier Removal
+q_3 = df_titanic['fare'].quantile(q=0.75)
+q_1 = df_titanic['fare'].quantile(q=0.25)
+IQR = q_3 - q_1
+
+condition = df_titanic['fare'] <= 4* IQR
+new_df_titanic = df_titanic[condition]
+
+#plot outlier removed scatter plot
+sns.scatterplot(x='age', y='fare', hue='sex', data=new_df_titanic)
+
+
+
+
+###########
+#jointplot
+sns.jointplot(x='age', y='fare', hue='who', kind= 'kde', data = new_df_titanic)
+sns.jointplot(x='age', y='fare', hue='class', kind="kde", data=new_df_titanic)
+
+
+
+
+
+
+#####
+#pairplot
+sns.pairplot(new_df_titanic,
+             x_vars=['survived', 'age', 'fare'],
+             y_vars=['survived', 'age', 'fare'],
+             kind='kde',
+             hue='class')
 plt.show()
+
+
+######
+#pairgrid
+grid = sns.PairGrid(new_df_titanic[['survived', 'age', 'fare', 'sex']])
+grid.map_diag(sns.histplot)
+grid.map_lower(sns.kdeplot)
+grid.map_upper(sns.scatterplot)
